@@ -57,7 +57,7 @@ class R90000(Driver):
                 return True
         return False
 
-    def conf(self, timeout):
+    def i2cconf(self, device, timeout):
         low_byte = timeout % 256
         high_byte = timeout // 256
 
@@ -126,3 +126,5 @@ class R90000(Driver):
         if data[0] != 0x15: # I2C callback
             return
         self.buf += list(data[2:])
+
+R9 = R90000()

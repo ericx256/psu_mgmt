@@ -1,7 +1,7 @@
 import time
 
 from psu_mgmt.app.manager import CONF, RMDB
-from psu_mgmt.drivers.driver import Driver
+from psu_mgmt.drivers.r90000 import R9
 
 def main():
     print(CONF.model_name)
@@ -17,12 +17,13 @@ def main():
         print(itr)
     print()
 
-    driver = Driver()
+    R9.reconnect()
+    device = R9.device_path
 
     idx = 0
     while True:
         itr = CONF.map_commands[idx]
-        print(itr.read(driver, "", 0xB0))
+        print(itr.read(R9, device, 0xB0))
 
         if idx == len(CONF.map_commands) - 1:
             idx = 0
