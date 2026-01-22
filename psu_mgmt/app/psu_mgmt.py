@@ -1,9 +1,18 @@
 from psu_mgmt.app.manager import CONF, RMDB
 
 def main():
-    # print(CONF.map_commands)
-    # print(CONF.map_plugins)
-    pass
+    print(CONF.model_name)
+    print()
+
+    print("[commands]")
+    for itr in CONF.map_commands:
+        print(itr)
+    print()
+
+    print("[plugins]")
+    for itr in CONF.map_plugins:
+        print(itr)
+    print()
 
 if __name__ == "__main__":
     main()

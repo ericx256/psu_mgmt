@@ -5,5 +5,6 @@ map_commands = { # "ClassName": ClassName,
     cls.__name__: cls for cls in (
     # PMBus Standard
         PMBus_00h_PAGE,
+        PMBus_01h_OPERATION,
     )
 }

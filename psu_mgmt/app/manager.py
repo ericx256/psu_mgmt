@@ -9,7 +9,7 @@ from psu_mgmt.plugins._maps import map_plugins
 MODEL_PATH = "models/"
 
 default_config = {
-    "model_name": "Example",
+    "model_name": "Example.default",
     "commands": [ # "name, [code], [page], [enabled]"
         {"name": "PMBus_00h_PAGE"},
         {"name": "PMBus_01h_OPERATION"},
@@ -45,7 +45,7 @@ default_config = {
 
 class ConfigurationManager:
     def __init__(self):
-        self.setting = {}
+        self.model_name = ""
 
         builtins.map_commands = map_commands # "ClassName": ClassName
         self.map_commands = [] # obj: ClassName
@@ -63,6 +63,7 @@ class ConfigurationManager:
 
     def init(self, file_path):
         setting = self.load(file_path)
+        self.model_name = setting["model_name"]
         self.map_commands = self.init_commands(setting)
         self.map_plugins = self.init_plugins(setting)
 
