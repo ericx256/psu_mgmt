@@ -28,7 +28,6 @@ class PMBus_01h_OPERATION(PMBus):
     def parse(self, raw):
         # parameter: [0x80, PEC]
         # return: "128", "ON, "
-
         value = raw[0]
 
         text = ""
@@ -53,3 +52,86 @@ class PMBus_01h_OPERATION(PMBus):
         # return: [0x80]
 
         return [value]
+
+class PMBus_02h_ON_OFF_CONFIG(PMBus):
+    def __init__(self, **kwargs):
+        super().__init__(self.__class__.__name__, **kwargs)
+        self.rlen = 1
+
+    def parse(self, raw):
+        # parameter: [0x19, PEC]
+        # return: "25", "Power up by [01h, ] Shutdown immediate"
+        value = raw[0]
+
+        text = ""
+        if value & 0x10 == 0x10:
+            text += "Power up by ["
+
+            if value & 0x08 == 0x08:
+                text += "01h, "
+
+            if value & 0x04 == 0x04:
+                text += "PSON"
+
+            text += "]"
+        else:
+            text += "Power up any time ["
+
+            if value & 0x08 == 0x08:
+                text += "?, "
+
+            if value & 0x04 == 0x04:
+                text += "?"
+
+            text += "]"
+
+        text += "\n"
+
+        if value & 0x02 == 0x02:
+            text += "PSON active High, "
+        else:
+            text += "PSON active Low, "
+
+        if value & 0x01 == 0x01:
+            text += "Shutdown immediate"
+        else:
+            text += "Shutdown delay"
+
+        return value, text
+
+    def apply(self, value):
+        # parameter: 0x19
+        # return: [0x19]
+
+        return [value]
+
+class PMBus_19h_CAPABILITY(PMBus):
+    def __init__(self, **kwargs):
+        super().__init__(self.__class__.__name__, **kwargs)
+        self.rlen = 1
+
+    def parse(self, raw):
+        value = raw[0]
+        text = ""
+
+        if value & 0x80 == 0x80:
+            text += "PEC, "
+            PMBus.PEC = True
+        else:
+            PMBus.PEC = False
+
+        tmp = (value & 0x60) >> 5
+        if tmp == 0x00:
+            text += "100KHz, "
+        elif tmp == 0x01:
+            text += "400KHz, "
+        else:
+            text += "Error Reserved, "
+
+        if value & 0x10 == 0x10:
+            text += "SMBAlert"
+
+        return value, text
+
+    def apply(self, value):
+        return []

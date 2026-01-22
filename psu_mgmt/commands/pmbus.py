@@ -54,9 +54,9 @@ class PMBus(SMBus):
             return []
 
         if self.page is None:
-            self.parse(r_raw[1:1+self.length])
+            self.parse(r_raw[1:1+self.rlen])
         else:
-            self.parse(r_raw[2:2+self.length])
+            self.parse(r_raw[2:2+self.rlen])
 
         return raw
 

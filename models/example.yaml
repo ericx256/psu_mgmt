@@ -4,6 +4,8 @@ model_name: Example.yaml
 commands:
   - name: PMBus_00h_PAGE
   - name: PMBus_01h_OPERATION
+  - name: PMBus_02h_ON_OFF_CONFIG
+  - name: PMBus_19h_CAPABILITY
   - name: PMBus_79h_STATUS_WORD
 
 plugins:

@@ -6,5 +6,7 @@ map_commands = { # "ClassName": ClassName,
     # PMBus Standard
         PMBus_00h_PAGE,
         PMBus_01h_OPERATION,
+        PMBus_02h_ON_OFF_CONFIG,
+        PMBus_19h_CAPABILITY,
     )
 }
