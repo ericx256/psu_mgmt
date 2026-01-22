@@ -9,7 +9,7 @@ class PMBus(SMBus):
     PEC = False # PMBus_19h
     VOUT_MODE = None # PMBus_20h
 
-    def __init__(self, name="", code=None, page=None, enabled=True, **_):
+    def __init__(self, name="", code=None, rlen=0, page=None, enabled=True, **_):
         super().__init__()
         self.block = False
         self.page = page
@@ -23,6 +23,7 @@ class PMBus(SMBus):
 
         self.name = name
         self.code = parse_code(code)
+        self.rlen = rlen
 
         if self.page is not None:
             self.name = f"{self.name} ({self.page})"
@@ -73,10 +74,10 @@ class PMBus(SMBus):
         return driver.i2ctransfer(device, address, [self.code] + raw, 0)
 
     def parse(self, raw):
-        raise NotImplementedError("parse function must be defined!")
+        return 0, ""
 
     def apply(self, value):
-        raise NotImplementedError("apply function must be defined!")
+        return []
 
     @staticmethod
     def linear16_parse(value):
