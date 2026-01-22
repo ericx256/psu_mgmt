@@ -1,6 +1,8 @@
 import re
 
 from .smbus import SMBus
+from psu_mgmt.driver.driver import Driver
+from psu_mgmt.utils.crc import calc_crc8
 
 class PMBus(SMBus):
     PEC = False # PMBus_19h
@@ -23,6 +25,57 @@ class PMBus(SMBus):
 
         if self.page is not None:
             self.name = f"{self.name} ({self.page})"
+
+    def read(self, driver: Driver, device: str, address: int):
+        cnt = 0
+        if PMBus.PEC:
+            cnt += 1
+
+        if self.r_wbuf:
+            w_raw = [address, self.code] + self.r_wbuf
+            r_raw = driver.i2ctransfer(device, w_raw, self.rlen + cnt)
+        elif self.page is None:
+            w_raw = [address, self.code]
+            r_raw = driver.i2ctransfer(device, w_raw, self.rlen + cnt)
+        else:
+            w_raw = [address, 0x06, 2, self.page, self.code]
+            r_raw = driver.i2ctransfer(device, w_raw, self.rlen + 2) # +CNT,PEC
+
+        if not r_raw:
+            return []
+
+        if self.block:
+            bcnt = r_raw[1]
+            r_raw = r_raw[0:2+bcnt+cnt]
+
+        raw = w_raw + r_raw
+
+        if PMBus.PEC and calc_crc8(raw) != 0:
+            return []
+
+        if self.page is None:
+            self.parse(r_raw[1:1+self.length])
+        else:
+            self.parse(r_raw[2:2+self.length])
+
+        return raw
+
+    def write(self, driver, device, address):
+        raw = self.apply()
+
+        if self.block:
+            raw = [len(raw)] + raw
+
+        if PMBus.PEC:
+            raw.append(calc_crc8([address, self.code] + raw))
+
+        return driver.i2ctransfer(device, [address, self.code] + raw, 0)
+
+    def parse(self, raw):
+        raise NotImplementedError("parse function must be defined!")
+
+    def apply(self, value):
+        raise NotImplementedError("apply function must be defined!")
 
 def parse_code(code):
     if isinstance(code, int):

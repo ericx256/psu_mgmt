@@ -16,9 +16,9 @@ class PMBus_00h_PAGE(PMBus):
 
     def apply(self, value):
         # parameter: 0
-        # return: 0x00, [0]
+        # return: [0]
 
-        return self.code, [value]
+        return [value]
 
 class PMBus_01h_OPERATION(PMBus):
     def __init__(self, **kwargs):
@@ -50,6 +50,6 @@ class PMBus_01h_OPERATION(PMBus):
 
     def apply(self, value):
         # parameter: 0x80
-        # return: 0x01, [0x80]
+        # return: [0x80]
 
-        return self.code, [value]
+        return [value]

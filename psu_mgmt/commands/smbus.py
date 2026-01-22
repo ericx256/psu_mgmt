@@ -11,5 +11,11 @@ class SMBus:
 
         self.enabled = True
 
+    def read(self, driver, device, address):
+        raise NotImplementedError("read function must be defined!")
+
+    def write(self, driver, device, address):
+        raise NotImplementedError("write function must be defined!")
+
     def __str__(self):
         return f"{self.code=:02X}h, {self.name=}, {self.rlen=}"
