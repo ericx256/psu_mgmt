@@ -1,0 +1,10 @@
+---
+model_name: Example
+
+commands:
+  - name: PMBus_00h_PAGE
+  - name: PMBus_01h_OPERATION
+  - name: PMBus_79h_STATUS_WORD
+
+plugins:
+  - name: ISP_CRPS

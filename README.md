@@ -1,1 +1,1 @@
-# psu_mgmt
+# PSU Management GUI
