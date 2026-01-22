@@ -25,3 +25,30 @@ def string_hex_addr(raw, file_path=""):
             fp.write(text)
 
     return text
+
+def parse_code(code):
+    if isinstance(code, int):
+        value = code
+
+    else:
+        code_str = str(code).strip().lower()
+
+        # "0x40"
+        if code_str.startswith("0x"):
+            value = int(code_str, 16)
+
+        # "40h"
+        elif code_str.endswith("h"):
+            value = int(code_str[:-1], 16)
+
+        # "64"
+        elif code_str.isdigit():
+            value = int(code_str)
+
+        else:
+            raise ValueError(f"Invalid code format: {code}")
+
+    if not (0 <= value <= 255):
+        raise ValueError(f"Code out of range (0~255): {value}")
+
+    return value
