@@ -1,5 +1,7 @@
 import builtins
+import importlib.util
 import os
+import sys
 
 import yaml
 
@@ -9,7 +11,7 @@ from psu_mgmt.plugins._maps import map_plugins
 MODEL_PATH = "models/"
 
 default_config = {
-    "model_name": "Example.default",
+    "model_name": "default",
     "commands": [ # "name, [code], [page], [enabled]"
         {"name": "PMBus_00h_PAGE"},
         {"name": "PMBus_01h_OPERATION"},
@@ -43,8 +45,25 @@ default_config = {
     ],
 }
 
+def load_module(module_name, module_path):
+    if module_name in sys.modules:
+        return
+
+    if not os.path.exists(module_path):
+        return
+
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    sys.modules[module_name] = module
+
 class ConfigurationManager:
     def __init__(self):
+        # module_name = os.path.splitext(os.path.basename(config_file_path))[0]
+        # module_path = os.path.splitext(config_file_path)[0] + ".py"
+        # load_module(module_name, module_path)
+
         self.model_name = ""
 
         builtins.map_commands = map_commands # "ClassName": ClassName

@@ -1,5 +1,5 @@
 ---
-model_name: Example.yaml
+model_name: example
 
 commands:
   - name: PMBus_00h_PAGE
