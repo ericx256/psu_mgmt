@@ -1,7 +1,7 @@
 import time
 
 from psu_mgmt.app.manager import CONF, RMDB
-from psu_mgmt.driver.driver import Driver
+from psu_mgmt.drivers.driver import Driver
 
 def main():
     print(CONF.model_name)

@@ -1,7 +1,7 @@
 import re
 
 from .smbus import SMBus
-from psu_mgmt.driver.driver import Driver
+from psu_mgmt.drivers.driver import Driver
 from psu_mgmt.utils.crc import calc_crc8
 
 class PMBus(SMBus):
@@ -33,13 +33,13 @@ class PMBus(SMBus):
 
         if self.r_wbuf:
             w_raw = [address, self.code] + self.r_wbuf
-            r_raw = driver.i2ctransfer(device, w_raw, self.rlen + cnt)
+            r_raw = driver.i2ctransfer(device, address, [self.code] + self.r_wbuf, self.rlen + cnt)
         elif self.page is None:
             w_raw = [address, self.code]
-            r_raw = driver.i2ctransfer(device, w_raw, self.rlen + cnt)
+            r_raw = driver.i2ctransfer(device, address, [self.code], self.rlen + cnt)
         else:
             w_raw = [address, 0x06, 2, self.page, self.code]
-            r_raw = driver.i2ctransfer(device, w_raw, self.rlen + 2) # +CNT,PEC
+            r_raw = driver.i2ctransfer(device, address, [0x06, 2, self.page, self.code], self.rlen + 2) # +CNT,PEC
 
         if not r_raw:
             return []
@@ -69,13 +69,63 @@ class PMBus(SMBus):
         if PMBus.PEC:
             raw.append(calc_crc8([address, self.code] + raw))
 
-        return driver.i2ctransfer(device, [address, self.code] + raw, 0)
+        return driver.i2ctransfer(device, address, [self.code] + raw, 0)
 
     def parse(self, raw):
         raise NotImplementedError("parse function must be defined!")
 
     def apply(self, value):
         raise NotImplementedError("apply function must be defined!")
+
+    @staticmethod
+    def linear16_parse(value):
+        if PMBus.VOUT_MODE:
+            value = value * PMBus.VOUT_MODE
+            return value, f"{value:.2f} (V)"
+        return 0, "No VOUT_MODE"
+
+    @staticmethod
+    def linear11_parse(value):
+        exponent = (value >> 11) & 0x1F
+        if exponent & 0x10:
+            exponent -= 0x20
+        mantissa = value & 0x07FF
+        if mantissa & 0x400:
+            mantissa -= 0x800
+        return mantissa * (2 ** exponent)
+
+    @staticmethod
+    def linear11_encode(value):
+        if value == 0:
+            return 0x0000
+
+        exponent = 0
+        mantissa = round(value / (2 ** exponent))
+
+        if mantissa < -1024 or mantissa > 1023:
+            while mantissa < -1024 or mantissa > 1023:
+                if exponent + 1 > 15:
+                    break
+                exponent += 1
+                mantissa = round(value / (2 ** exponent))
+        else:
+            for e in range(exponent, -16, -1):
+                m = round(value / (2 ** e))
+                if m < -1024 or m > 1023:
+                    break
+
+                exponent = e
+                mantissa = m
+
+                v = m * (2 ** e)
+                error = abs(value - v)
+                if error == 0:
+                    break
+
+        if exponent < 0:
+            exponent = 32 + exponent
+
+        return (exponent << 11) + mantissa
 
 def parse_code(code):
     if isinstance(code, int):
