@@ -64,8 +64,8 @@ class ConfigurationManager:
         builtins.map_plugins = map_plugins
 
         self.model_name = ""
-        self.map_commands = [] # obj: ClassName
-        self.map_plugins = [] # obj: ClassName
+        self.list_commands = []
+        self.list_plugins = []
 
         file_path = ""
         if os.listdir(MODEL_PATH):
@@ -80,7 +80,7 @@ class ConfigurationManager:
 
         setting = self.load_config(file_path)
         self.model_name = setting["model_name"]
-        self.map_commands = self.init_commands(setting)
+        self.list_commands = self.init_commands(setting)
         self.map_plugins = self.init_plugins(setting)
 
     def load_module(self, file_path):

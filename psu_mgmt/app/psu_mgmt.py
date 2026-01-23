@@ -9,7 +9,7 @@ def main():
     print()
 
     print("[commands]")
-    for itr in CONF.map_commands:
+    for itr in CONF.list_commands:
         print(itr)
     print()
 
@@ -22,10 +22,10 @@ def main():
 
     idx = 0
     while True:
-        itr = CONF.map_commands[idx]
+        itr = CONF.list_commands[idx]
         print_hex(itr.read(R9, device, 0xB0))
 
-        if idx == len(CONF.map_commands) - 1:
+        if idx == len(CONF.list_commands) - 1:
             idx = 0
         else:
             idx += 1
