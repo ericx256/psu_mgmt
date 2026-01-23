@@ -1,6 +1,8 @@
 import builtins
+from datetime import datetime
 import importlib.util
 import os
+import sqlite3
 import sys
 
 import yaml
@@ -9,8 +11,9 @@ from psu_mgmt.commands._maps import map_commands
 from psu_mgmt.plugins._maps import map_plugins
 
 MODEL_PATH = "models/"
+RMDB_PATH = "log.db"
 
-default_config = {
+default_model = {
     "model_name": "default",
     "commands": [ # "name, [code], [page], [enabled]"
         {"name": "PMBus_00h_PAGE"},
@@ -83,6 +86,8 @@ class ConfigurationManager:
         self.list_commands = self.init_commands(setting)
         self.map_plugins = self.init_plugins(setting)
 
+    # private api
+
     def load_module(self, file_path):
         module_name = os.path.splitext(os.path.basename(file_path))[0]
         module_path = os.path.splitext(file_path)[0] + '.py'
@@ -93,7 +98,7 @@ class ConfigurationManager:
             with open(file_path, "r", encoding="utf-8") as f:
                 setting = yaml.safe_load(f)
         else:
-            setting = default_config
+            setting = default_model
         return setting
 
     def init_commands(self, setting: dict):
@@ -118,7 +123,42 @@ class ConfigurationManager:
 
 class DatabaseManager:
     def __init__(self):
-        pass
+        self.conn = sqlite3.connect(RMDB_PATH)
+        self.curr = self.conn.cursor()
+
+        self.create_log_table("temp")
+        self.curr.execute("DELETE FROM temp;")
+        self.conn.commit()
+        self.curr.execute("VACUUM;")
+
+        self.table_ptr = ""
+
+    def start(self):
+        datetime_str = datetime.now().strftime("%y%m%d_%H%M%S") # 20260120_140635
+
+        self.create_log_table(datetime_str)
+
+        self.table_ptr = datetime_str
+
+    def insert(self, table, name, value, result, raw):
+        datetime_str = datetime.now().strftime("%y%m%d_%H%M%S") # 20260120_140635
+
+        self.curr.execute(f"""
+            INSERT INTO {table} VALUES (?, ?, ?, ?, ?);
+        """, datetime_str, name, value, result, raw)
+
+        self.conn.commit()
+
+    def create_log_table(self, table_name):
+        self.curr.execute(f"""
+            CREATE TABLE IF NOT EXISTS {table_name} (
+                datetime    TEXT,
+                name        TEXT,
+                value       TEXT,
+                result      TEXT,
+                raw         TEXT
+            );
+        """)
 
 CONF = ConfigurationManager()
 RMDB = DatabaseManager()
