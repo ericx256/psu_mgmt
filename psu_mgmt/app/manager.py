@@ -60,16 +60,11 @@ def load_module(module_name, module_path):
 
 class ConfigurationManager:
     def __init__(self):
-        # module_name = os.path.splitext(os.path.basename(config_file_path))[0]
-        # module_path = os.path.splitext(config_file_path)[0] + ".py"
-        # load_module(module_name, module_path)
+        builtins.map_commands = map_commands
+        builtins.map_plugins = map_plugins
 
         self.model_name = ""
-
-        builtins.map_commands = map_commands # "ClassName": ClassName
         self.map_commands = [] # obj: ClassName
-
-        builtins.map_plugins = map_plugins # "ClassName": ClassName
         self.map_plugins = [] # obj: ClassName
 
         file_path = ""
@@ -81,12 +76,19 @@ class ConfigurationManager:
         self.init(file_path)
 
     def init(self, file_path):
-        setting = self.load(file_path)
+        self.load_module(file_path)
+
+        setting = self.load_config(file_path)
         self.model_name = setting["model_name"]
         self.map_commands = self.init_commands(setting)
         self.map_plugins = self.init_plugins(setting)
 
-    def load(self, file_path: str):
+    def load_module(self, file_path):
+        module_name = os.path.splitext(os.path.basename(file_path))[0]
+        module_path = os.path.splitext(file_path)[0] + '.py'
+        load_module(module_name, module_path)
+
+    def load_config(self, file_path: str):
         if os.path.exists(file_path):
             with open(file_path, "r", encoding="utf-8") as f:
                 setting = yaml.safe_load(f)
